@@ -1,17 +1,10 @@
-# This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
-# This workflow will build a Java project with Gradle and cache/restore any dependencies to improve the workflow execution time
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-java-with-gradle
-
-name: Java CI with Gradle
-
+name: server CI/CD
+#
 on:
   push:
-    branches: [ "main" ]
+    branches: [ main ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ main ]
 
 env:
   S3_BUCKET_NAME: mysparta1
@@ -32,9 +25,11 @@ jobs:
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
+        shell: bash
 
       - name: Build with Gradle
-        run: ./gradlew clean build
+        run: ./gradlew build
+        shell: bash
 
       - name: Make zip file
         run: zip -r ./cicdtest.zip .
@@ -48,7 +43,7 @@ jobs:
           aws-region: ap-northeast-2
 
       - name: Upload to S3
-        run: aws s3 cp --region ap-northeast-2 ./cicdtest.zip s3://$S3_BUCKET_NAME/cicdtest.zip
+        run: aws s3 cp --region ap-northeast-2 ./cicdtest.zip s3://$S3_BUCKET_NAME/
 
       - name: Code Deploy
         run: aws deploy create-deployment --application-name cicdtest-deploy --deployment-config-name CodeDeployDefault.AllAtOnce --deployment-group-name cicd-test-deploy --s3-location bucket=$S3_BUCKET_NAME,bundleType=zip,key=cicdtest.zip
